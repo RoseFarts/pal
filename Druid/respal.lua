@@ -33,6 +33,9 @@ SB.GiftOftheNaaru = 59544
 SB.AncestralCall = 274738
 SB.LightsJudgement = 255647
 
+local function gcd()
+	return
+end
 
 local function combat()
     if not player.alive or player.buff(SB.TravelForm).exists or player.buff(SB.Refreshment).up or player.buff(SB.Drink).up or player.channeling() then
@@ -99,6 +102,42 @@ local flourishpercent = dark_addon.settings.fetch('respal_settings_flourishperce
             return cast(SB.Rebirth, 'mouseover')
         end
     end
+	
+if modifier.shift and target.alive and target.enemy and not player.channeling() and talent(3,2) then
+	if target.castable(SB.Sunfire) and target.debuff(SB.Sunfire).down then
+		return cast(SB.Sunfire, target)
+	end
+
+	if target.castable(SB.Moonfire) and target.debuff(SB.Moonfire).down then
+		return cast(SB.Moonfire, target)
+	end
+
+	if castable(SB.CatForm, 'player') and not -buff(SB.CatForm) then
+		return cast(SB.CatForm, 'player')
+	end
+	
+	if -buff(SB.CatForm) and target.distance <= 8 then
+		if enemies.around(8) < 2 then
+			if castable(SB.Rake) and -power.combopoints <= 4 and -power.energy >= 55 and target.debuff(SB.RakeDebuff).remains <= 3 then
+				return cast(SB.Rake)
+			end
+	
+			if castable(SB.Shred) and -power.combopoints <= 4 and -power.energy >= 60 then
+				return cast(SB.Shred)
+			end
+		end
+		
+		if enemies.around(8) >= 2 then
+			if castable(SB.SwipeCat) and -power.combopoints <= 4 and -power.energy >= 60 then
+				return cast(SB.SwipeCat)
+			end
+		end
+		
+		if castable(SB.FerociousBite) and -power.combopoints == 5 and -power.energy >= 65 then
+			return cast(SB.FerociousBite)
+		end	
+	end
+end
 
 -------------
 ---Racials---
@@ -499,6 +538,7 @@ dark_addon.rotation.register({
     spec = dark_addon.rotation.classes.druid.restoration,
     name = 'respal',
     label = 'PAL - restoration druid',
+    gcd = gcd,
     combat = combat,
     resting = resting,
     interface = interface
