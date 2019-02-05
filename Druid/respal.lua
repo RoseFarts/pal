@@ -104,11 +104,11 @@ local flourishpercent = dark_addon.settings.fetch('respal_settings_flourishperce
     end
 	
 if modifier.shift and target.alive and target.enemy and not player.channeling() and talent(3,2) then
-	if target.castable(SB.Sunfire) and target.debuff(SB.Sunfire).down then
+	if target.castable(SB.Sunfire) and target.debuff(SB.Sunfire).remains <= 2 then
 		return cast(SB.Sunfire, target)
 	end
 
-	if target.castable(SB.Moonfire) and target.debuff(SB.Moonfire).down then
+	if target.castable(SB.Moonfire) and target.debuff(SB.Moonfire).remains <= 2 then
 		return cast(SB.Moonfire, target)
 	end
 
@@ -118,7 +118,7 @@ if modifier.shift and target.alive and target.enemy and not player.channeling() 
 	
 	if -buff(SB.CatForm) and target.distance <= 8 then
 		if enemies.around(8) < 2 then
-			if castable(SB.Rake) and -power.combopoints <= 4 and -power.energy >= 55 and target.debuff(SB.RakeDebuff).remains <= 3 then
+			if castable(SB.Rake) and -power.combopoints <= 4 and -power.energy >= 55 and target.debuff(SB.RakeDebuff).remains <= 2 then
 				return cast(SB.Rake)
 			end
 	
