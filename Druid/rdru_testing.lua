@@ -226,12 +226,12 @@ end
 
 -- Use Regrowth as an emergency heal.
 if not IsInRaid() then
-	if (tank.castable(SB.Regrowth) and tank.health.percent <= 70)
-	or (player.buff(SB.Innervate).up and tank.castable(SB.Regrowth)) and not player.moving then
+	if (tank.castable(SB.Regrowth) and tank.health.percent <= 60)
+	or (player.buff(SB.Innervate).up and tank.castable(SB.Regrowth) and tank.buff(SB.Regrowth).down) and not player.moving then
 		return cast(SB.Regrowth, tank)
 	end
-	if (lowest.castable(SB.Regrowth) and lowest.health.percent <= 50)
-	or (player.buff(SB.Innervate).up and lowest.castable(SB.Regrowth)) and not player.moving then
+	if (lowest.castable(SB.Regrowth) and lowest.health.percent <= 75)
+	or (player.buff(SB.Innervate).up and lowest.castable(SB.Regrowth) and lowest.buff(SB.Regrowth).down) and not player.moving then
 		return cast(SB.Regrowth, lowest)
 	end
 end
@@ -392,6 +392,34 @@ end
 -- Efflorence
 if modifier.alt and not lastcast(SB.Efflorescence) then
 	return cast(SB.Efflorescence, 'ground')
+end
+
+---------
+-- Heal--
+---------
+-- Keep Lifebloom, on an active tank.
+if IsInGroup() and tank.castable(SB.Lifebloom) and tank.buff(SB.Lifebloom).down and not lastcast(SB.Lifebloom) then
+	return cast(SB.Lifebloom, tank)
+end
+-- Swiftmend
+if player.castable(SB.Swiftmend) and player.health.percent < 50 then
+	return cast(SB.Swiftmend, player)
+end
+-- Rejuvenation
+if player.castable(SB.Rejuvenation) and not player.buff(SB.Rejuvenation).up and player.health.percent < 75 then
+	return cast(SB.Rejuvenation, player)
+end
+-- Regrowth
+if player.castable(SB.Regrowth) and ((player.health.percent < 75 and not player.buff(SB.Regrowth).up) or player.health.percent < 30) then
+	return cast(SB.Regrowth, player)
+end
+-- Barkskin
+if player.castable(SB.Barkskin) and player.health.percent < 50 then
+	return cast(SB.Barkskin, player)
+end
+if lowest.castable(SB.Rejuvenation) and (lowest.buff(SB.Rejuvenation).down and lowest.health.percent <= 95)
+or (talent(7, 2) and lowest.buff(SB.RejuvenationGermination).down and lowest.health.percent <= 75) then
+	return cast(SB.Rejuvenation, lowest)
 end
 end
 
