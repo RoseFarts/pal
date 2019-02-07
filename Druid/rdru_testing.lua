@@ -261,11 +261,11 @@ end
 -- Damage Rotation--
 --------------------
 if toggle('dps', false) and not isCC("target") then
-if target.castable(SB.Sunfire) and target.debuff(SB.Sunfire).remains <= 3 and -power.combopoints <= 5 then
+if target.castable(SB.Sunfire) and target.debuff(SB.Sunfire).remains <= 2 and -power.combopoints <= 5 then
 	return cast(SB.Sunfire, target)
 end
 
-if target.castable(SB.Moonfire) and target.debuff(SB.Moonfire).remains <= 3 and -power.combopoints <= 5 then
+if target.castable(SB.Moonfire) and target.debuff(SB.Moonfire).remains <= 2 and -power.combopoints <= 5 then
 	return cast(SB.Moonfire, target)
 end
 
@@ -397,29 +397,77 @@ end
 ---------
 -- Heal--
 ---------
--- Keep Lifebloom, on an active tank.
-if IsInGroup() and tank.castable(SB.Lifebloom) and tank.buff(SB.Lifebloom).down and not lastcast(SB.Lifebloom) then
-	return cast(SB.Lifebloom, tank)
+-- Healing Cooldowns
+if toggle('cooldowns') then
+	-- Ironbark
+	if toggle('IronBark', false) then
+		if tank.castable(SB.Ironbark) and tank.health.percent < ironbark_percent then
+			return cast(SB.Ironbark, tank)
+		end
+	end
+	-- Flourish
+	if talent(7, 3) and group.under(flourish_percent, 60, true) or lastcast(SB.Tranquility) and -spell(SB.Flourish) == 0 then
+		return cast(SB.Flourish)
+	end
+	-- Keep Lifebloom on an active tank
+	if photosyn >=4 and talent(7,1) then
+		if player.castable(SB.Lifebloom) and player.buff(SB.Lifebloom).down and not lastcast(SB.Lifebloom) then
+			return cast(SB.Lifebloom, player)
+		end
+	end
+	if photosyn < 4 and talent(7,1) then
+		if tank.castable(SB.Lifebloom) and tank.buff(SB.Lifebloom).down and tank.health.percent <= 98 and not lastcast(SB.Lifebloom) then
+			return cast(SB.Lifebloom, tank)
+		end
+	end
+	if not talent(7,1) then
+		if tank.castable(SB.Lifebloom) and tank.buff(SB.Lifebloom).down and tank.health.percent <= 98 and not lastcast(SB.Lifebloom) then
+			return cast(SB.Lifebloom, tank)
+		end
+	end
+	-- Cenarion Ward on cooldown
+    if talent(1, 3) and tank.castable(SB.CenarionWard) and tank.buff(SB.CenarionWard).down then
+        return cast(SB.CenarionWard, tank)
+    end
+end	
+-- Auto-Dispel
+if toggle('dispell', false) then
+	-- self-cleanse
+	if castable(SB.NaturesCure) and player.dispellable(SB.NaturesCure) then
+		return cast(SB.NaturesCure, player)
+	end
+	-- group cleanse
+	local unit = group.dispellable(SB.NaturesCure)
+	if unit and unit.castable(SB.NaturesCure) then
+		return cast(SB.NaturesCure, unit)
+	end
 end
--- Swiftmend
-if player.castable(SB.Swiftmend) and player.health.percent < 50 then
-	return cast(SB.Swiftmend, player)
+
+-- Use Wild Growth
+if (lowest.castable(SB.WildGrowth) and group.under(wildgrowth_percent, 30, true) >= wildgrowth_number)
+or (player.buff(SB.Innervate).up and lowest.castable(SB.WildGrowth)) and not player.moving then
+	return cast(SB.WildGrowth, lowest)
 end
+
+-- Use Swiftmend
+if tank.castable(SB.Swiftmend) and (tank.buff(SB.Rejuvenation).up or tank.buff(SB.Regrowth).up) and tank.health.percent <= 75 then
+	return cast(SB.Swiftmend, tank)
+end
+if lowest.castable(SB.Swiftmend) and (tank.buff(SB.Rejuvenation).up or tank.buff(SB.Regrowth).up) and lowest.health.percent <= 75 then
+	return cast(SB.Swiftmend, lowest)
+end
+
 -- Rejuvenation
-if player.castable(SB.Rejuvenation) and not player.buff(SB.Rejuvenation).up and player.health.percent < 75 then
-	return cast(SB.Rejuvenation, player)
+if tank.castable(SB.Rejuvenation) and tank.buff(SB.Rejuvenation).down and tank.health.percent <= 98 then
+	return cast(SB.Rejuvenation, tank)
 end
--- Regrowth
-if player.castable(SB.Regrowth) and ((player.health.percent < 75 and not player.buff(SB.Regrowth).up) or player.health.percent < 30) then
-	return cast(SB.Regrowth, player)
-end
--- Barkskin
-if player.castable(SB.Barkskin) and player.health.percent < 50 then
-	return cast(SB.Barkskin, player)
-end
-if lowest.castable(SB.Rejuvenation) and (lowest.buff(SB.Rejuvenation).down and lowest.health.percent <= 95)
-or (talent(7, 2) and lowest.buff(SB.RejuvenationGermination).down and lowest.health.percent <= 75) then
+if lowest.castable(SB.Rejuvenation) and lowest.buff(SB.Rejuvenation).down and current_rejuvs <= max_rejuvs and lowest.health.percent <= 95 then
 	return cast(SB.Rejuvenation, lowest)
+end
+
+-- Use Clearcasting procs
+if player.buff(SB.Clearcasting).up and lowest.castable(SB.Regrowth) and lowest.health.percent < 80 and not player.moving then
+	return cast(SB.Regrowth, lowest)
 end
 end
 
